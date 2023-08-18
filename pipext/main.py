@@ -78,7 +78,6 @@ def uncomment_or_append_in_requirements(installed_version, req_file):
 def install_and_update_requirements(args):
     # Use pip to install the package
     req_file = get_requirements_file(args)
-    print(req_file)
     subprocess.check_call([sys.executable, '-m', 'pip', 'install', args[-1]])
 
     # Extract the base package name
