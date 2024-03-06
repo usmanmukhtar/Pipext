@@ -94,10 +94,9 @@ def install_and_update_requirements(args):
         base_package_name = extract_base_package_name(args[-1])
 
         # Get the installed version
-        installed_version = get_installed_version(base_package_name)
 
         # Uncomment or append to requirements.txt
-        if installed_version:
+        if installed_version := get_installed_version(base_package_name):
             uncomment_or_append_in_requirements(installed_version, req_file)
             message = f"Updated requirements.txt with [green]{installed_version}[/green]"
             console.print(Panel(message, title="Package Update", expand=False))
