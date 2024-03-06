@@ -1,6 +1,10 @@
 import sys
 import subprocess
 import os
+from rich.console import Console
+from rich.panel import Panel
+
+console = Console()
 
 DEFAULT_REQUIREMENTS_FILE = 'requirements.txt'
 REQUIREMENTS_DIR = 'requirements'
@@ -8,6 +12,7 @@ REQUIREMENTS_DIR = 'requirements'
 
 def get_requirements_file(args):
     """Get the path to the requirements file."""
+            
     # If the '-e' flag is provided, extract the environment name
     if '-e' in args:
         env_index = args.index('-e')
@@ -23,11 +28,15 @@ def get_requirements_file(args):
             if not os.path.exists(REQUIREMENTS_DIR):
                 os.mkdir(REQUIREMENTS_DIR)
             
+            # Create the environment-specific requirements file if it doesn't exist
             if not os.path.exists(file_path):
                 open(file_path, "w").close()
 
-
             return file_path
+    else:
+        # Ensure the requirements file is created if it does not exist
+        if not os.path.exists(DEFAULT_REQUIREMENTS_FILE):
+            open(DEFAULT_REQUIREMENTS_FILE, "w").close()
 
     return DEFAULT_REQUIREMENTS_FILE
 
@@ -78,20 +87,26 @@ def uncomment_or_append_in_requirements(installed_version, req_file):
 def install_and_update_requirements(args):
     # Use pip to install the package
     req_file = get_requirements_file(args)
-    subprocess.check_call([sys.executable, '-m', 'pip', 'install', args[-1]])
+    try:
+        subprocess.check_call([sys.executable, '-m', 'pip', 'install', args[-1]])
 
-    # Extract the base package name
-    base_package_name = extract_base_package_name(args[-1])
+        # Extract the base package name
+        base_package_name = extract_base_package_name(args[-1])
 
-    # Get the installed version
-    installed_version = get_installed_version(base_package_name)
+        # Get the installed version
+        installed_version = get_installed_version(base_package_name)
 
-    # Uncomment or append to requirements.txt
-    if installed_version:
-        uncomment_or_append_in_requirements(installed_version, req_file)
-        print(f"Updated requirements.txt with {installed_version}")
-    else:
-        print(f"Could not retrieve the version for {base_package_name}. Please check manually.")
+        # Uncomment or append to requirements.txt
+        if installed_version:
+            uncomment_or_append_in_requirements(installed_version, req_file)
+            message = f"Updated requirements.txt with [green]{installed_version}[/green]"
+            console.print(Panel(message, title="Package Update", expand=False))
+        else:
+            message = f"Could not retrieve the version for [red]{base_package_name}.[/red] Please check manually."
+            console.print(Panel(message, title="Error", expand=False))
+    except Exception as e:
+        pass
+        
 
 def uninstall_and_comment_out_requirements(args):
     req_file = get_requirements_file(args)
@@ -103,7 +118,9 @@ def uninstall_and_comment_out_requirements(args):
 
     # Comment out the package in requirements.txt
     comment_out_package_in_requirements(base_package_name, req_file)
-    print(f"Commented out {base_package_name} in requirements.txt")
+
+    message = f"Commented out [yellow]{base_package_name}[/yellow] in requirements.txt"
+    console.print(Panel(message, title="Package Update", expand=False))
 
 def main():
     if len(sys.argv) > 2:
@@ -115,6 +132,8 @@ def main():
         elif action == "uninstall":
             uninstall_and_comment_out_requirements(args)
         else:
-            print("Invalid action. Use either 'install' or 'uninstall'.")
+            message = f"[red]Invalid action. Use either 'install' or 'uninstall'.[/red]"
+            console.print(Panel(message, title="Error", expand=False))
     else:
-        print("Please provide an action (install/uninstall) and a package name.")
+        message = f"[red]Please provide an action (install/uninstall) and a package name.[/red]"
+        console.print(Panel(message, title="Error", expand=False))
