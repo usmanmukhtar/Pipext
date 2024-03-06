@@ -131,8 +131,8 @@ def main():
         elif action == "uninstall":
             uninstall_and_comment_out_requirements(args)
         else:
-            message = f"[red]Invalid action. Use either 'install' or 'uninstall'.[/red]"
+            message = "[red]Invalid action. Use either 'install' or 'uninstall'.[/red]"
             console.print(Panel(message, title="Error", expand=False))
     else:
-        message = f"[red]Please provide an action (install/uninstall) and a package name.[/red]"
+        message = "[red]Please provide an action (install/uninstall) and a package name.[/red]"
         console.print(Panel(message, title="Error", expand=False))
